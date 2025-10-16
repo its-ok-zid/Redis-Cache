@@ -1,0 +1,41 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: E-commerce redis cache
+  datasource:
+    url: jdbc:mysql://localhost:3306/ecommerce
+    username: root
+    password: password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        show_sql: true
+        format_sql: true
+  cache:
+    type: redis
+    redis:
+      time-to-live: 600000 # Cache expiration time in milliseconds (10 minutes)
+      cache-null-values: false
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: your_redis_password_if_any
+      jedis:
+        pool:
+          max-active: 10
+          max-idle: 5
+          min-idle: 2
+          max-wait: -1ms
+
+logging:
+  level:
+    root: INFO
+    org.springframework.web: DEBUG
+    com.yourpackage: DEBUG
