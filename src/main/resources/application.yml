@@ -4,35 +4,49 @@ server:
 spring:
   application:
     name: E-commerce redis cache
+
   datasource:
-    url: jdbc:mysql://localhost:3306/ecommerce
-    username: root
-    password: password
+    url: jdbc:postgresql://zidtech-devs.b.aivencloud.com:27664/defaultdb?ssl=require&user=avnadmin&password=AVNS_ou6dujwcJ_WnNuU-Wy_
+    username: avnadmin
+    password: AVNS_ou6dujwcJ_WnNuU-Wy_
     driver-class-name: org.postgresql.Driver
+
   jpa:
+    # When using Flyway, you usually want Hibernate to NOT auto-create/alter schema.
+    # Use 'none' or 'validate' in production. For dev you might still use 'update', but it can conflict.
     hibernate:
-      ddl-auto: validate
+      ddl-auto: none
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         show_sql: true
         format_sql: true
+
+  flyway:
+    enabled: true
+    # your project currently has migrations under flyway/migration; set this accordingly
+    locations: classpath:flyway/migration
+    baseline-on-migrate: true
+
   cache:
     type: redis
     redis:
-      time-to-live: 600000 # Cache expiration time in milliseconds (10 minutes)
+      # prefer human readable duration
+      time-to-live: 10m
       cache-null-values: false
+
   data:
     redis:
       host: localhost
       port: 6379
-      password: your_redis_password_if_any
+      password: ""           # empty string if no password; don't put secrets in repo
       jedis:
         pool:
           max-active: 10
           max-idle: 5
           min-idle: 2
-          max-wait: -1ms
+          # Express durations as numbers or use values like -1 (no wait); '-1ms' is unusual
+          max-wait: -1
 
 logging:
   level:

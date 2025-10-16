@@ -15,105 +15,47 @@ public class RedisCacheService {
 
     private final RedisTemplate<String, Object> redisTemplate;
 
-    /**
-     * Manual Cache methods
-     **/
-    public void saveCache(String key, Object value) {
+    /** Cache any value with optional TTL (in seconds). If ttlSeconds <= 0, do not set expiry. */
+    public void cacheValue(String key, Object value, long ttlSeconds) {
         try {
-            redisTemplate.opsForValue()
-                    .set(key, value, 1, TimeUnit.HOURS);
-            log.info("Cache value for key:{}", key);
+            redisTemplate.opsForValue().set(key, value);
+            if (ttlSeconds > 0) {
+                redisTemplate.expire(key, ttlSeconds, TimeUnit.SECONDS);
+            }
         } catch (Exception e) {
-            log.error("Error cache for key:{}. Error:{}", key, e.getMessage());
+            log.error("Error caching key: {} error: {}", key, e.getMessage());
         }
     }
 
     public void cacheValue(String key, Object value) {
-        try {
-            redisTemplate.opsForValue()
-                    .set(key, value);
-            log.info("Cache value for key:{}", key);
-        } catch (Exception e) {
-            log.error("Error cache for key:{}, with Error:{}", key, e.getMessage());
-        }
+        cacheValue(key, value, 0);
     }
 
     public Object getValue(String key) {
         try {
             return redisTemplate.opsForValue().get(key);
         } catch (Exception e) {
-            log.error("Error getting cache for key:{}, with Error:{}", key, e.getMessage());
+            log.error("Error getting key: {} error: {}", key, e.getMessage());
             return null;
-        }
-    }
-
-    public <T> T getValue(String key, Class<T> type) {
-        try {
-            Object value = redisTemplate.opsForValue().get(key);
-            if (type.isInstance(value)) {
-                return type.cast(value);
-            } else {
-                log.warn("Cached value for key:{} is not of type:{}", key, type.getName());
-                return null;
-            }
-        } catch (Exception e) {
-            log.error("Error while getting cache for key:{}, with Error:{}", key, e.getMessage());
-            return null;
-        }
-    }
-
-   /** Pattern-based cache eviction **/
-    public void evictPattern(String pattern) {
-        try {
-            Set<String> keys = redisTemplate.keys(pattern);
-            if (keys != null && !keys.isEmpty()) {
-                redisTemplate.delete(keys);
-                log.debug("Evicted {} keys matching pattern: {}", keys.size(), pattern);
-            }
-        } catch (Exception e) {
-            log.error("Error evicting pattern: {}", pattern, e);
         }
     }
 
     public void evictKey(String key) {
         try {
-            Boolean deleted = redisTemplate.delete(key);
-            log.debug("Key {} evicted: {}", key, deleted);
+            redisTemplate.delete(key);
         } catch (Exception e) {
-            log.error("Error evicting key: {}", key, e);
+            log.error("Error deleting key: {} error: {}", key, e.getMessage());
         }
     }
 
-    /** Cache statistics and monitoring **/
-    public Long getCacheSize(String pattern) {
+    /** returns count of keys matching pattern - note: using KEYS on production is discouraged */
+    public long getCacheSize(String pattern) {
         try {
             Set<String> keys = redisTemplate.keys(pattern);
-            return keys != null ? (long) keys.size() : 0L;
+            return keys == null ? 0 : keys.size();
         } catch (Exception e) {
-            log.error("Error getting cache size for pattern: {}", pattern, e);
-            return 0L;
-        }
-    }
-
-    public void clearAllCaches() {
-        try {
-            Set<String> keys = redisTemplate.keys("*");
-            if (keys != null && !keys.isEmpty()) {
-                redisTemplate.delete(keys);
-                log.info("Cleared all {} cache entries", keys.size());
-            }
-        } catch (Exception e) {
-            log.error("Error clearing all caches", e);
-        }
-    }
-
-    /** Check if key exists **/
-    public Boolean hasKey(String key) {
-        try {
-            return redisTemplate.hasKey(key);
-        } catch (Exception e) {
-            log.error("Error checking key existence: {}", key, e);
-            return false;
+            log.error("Error getting keys for pattern: {} error: {}", pattern, e.getMessage());
+            return 0;
         }
     }
 
@@ -127,4 +69,3 @@ public class RedisCacheService {
         }
     }
 }
-

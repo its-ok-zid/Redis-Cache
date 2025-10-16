@@ -1,15 +1,23 @@
--- Create updated_at trigger function
+-- V4.0.0__create_triggers.sql
+-- Trigger function to keep updated_at current on UPDATE
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
-    NEW.updated_at = CURRENT_TIMESTAMP;
+    NEW.updated_at = NOW();
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
--- Create triggers for updated_at
-CREATE TRIGGER update_categories_updated_at BEFORE UPDATE ON categories
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+-- Attach trigger to products table
+DROP TRIGGER IF EXISTS trg_update_products_updated_at ON products;
+CREATE TRIGGER trg_update_products_updated_at
+BEFORE UPDATE ON products
+FOR EACH ROW
+EXECUTE FUNCTION update_updated_at_column();
 
-CREATE TRIGGER update_products_updated_at BEFORE UPDATE ON products
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+-- Also attach to categories (optional)
+DROP TRIGGER IF EXISTS trg_update_categories_updated_at ON categories;
+CREATE TRIGGER trg_update_categories_updated_at
+BEFORE UPDATE ON categories
+FOR EACH ROW
+EXECUTE FUNCTION update_updated_at_column();
