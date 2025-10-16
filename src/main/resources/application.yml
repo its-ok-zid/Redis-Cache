@@ -6,9 +6,9 @@ spring:
     name: E-commerce redis cache
 
   datasource:
-    url: jdbc:postgresql://zidtech-devs.b.aivencloud.com:27664/defaultdb?ssl=require&user=avnadmin&password=AVNS_ou6dujwcJ_WnNuU-Wy_
-    username: avnadmin
-    password: AVNS_ou6dujwcJ_WnNuU-Wy_
+    url: DB_URL
+    username: DB_USER
+    password: db_password_here   # don't put secrets in repo
     driver-class-name: org.postgresql.Driver
 
   jpa:
