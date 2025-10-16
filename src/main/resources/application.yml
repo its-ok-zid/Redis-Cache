@@ -6,9 +6,9 @@ spring:
     name: E-commerce redis cache
 
   datasource:
-    url: DB_URL
-    username: DB_USER
-    password: db_password_here   # don't put secrets in repo
+    url:
+    username:
+    password:    # don't put secrets in repo
     driver-class-name: org.postgresql.Driver
 
   jpa:
